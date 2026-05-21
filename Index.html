@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LENS — Vmage Editor</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playwrite+AR+Guides&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js"></script>
+  <script src="https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js"></script>
+  <link rel="stylesheet" href="./Style.css">
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">VMAGE<span>.editor</span></div>
+    <div class="header-pills">
+      <button class="pill" id="undoBtn">↩ Undo</button>
+      <button class="pill" id="redoBtn">↪ Redo</button>
+      <button class="pill" id="saveBtn">↓ Export</button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <div class="app">
+    <!-- CANVAS ZONE -->
+    <div class="canvas-zone">
+      <div class="canvas-wrap" id="canvasWrap">
+        <div class="drop-hint" id="dropHint">
+          <div class="dico">⬡</div>
+          <p>Drop or Choose Image</p>
+          <small>JPG · PNG · WEBP · GIF</small>
+        </div>
+        <canvas id="previewCanvas"></canvas>
+        <canvas id="bdayCanvas"></canvas>
+        <canvas id="cropOverlay"></canvas>
+        <div class="canvas-info" id="canvasInfo" style="display:none"></div>
+      </div>
+
+      <div class="action-bar">
+        <input type="file" id="fileInput" accept="image/*" />
+        <button class="btn btn-accent" id="chooseBtn">▸ Open</button>
+        <button class="btn btn-ghost" id="resetBtn">↺ Reset</button>
+        <button class="btn btn-ghost" id="cropBtn">⊡ Crop</button>
+        <button class="btn btn-ghost" id="bgRemoveBtn">✂ BG Strip</button>
+        <button class="btn btn-teal" id="saveBtn2">↓ Save</button>
+        <button class="btn btn-teal" id="recordBtn">⏺ Record</button>
+        <button class="btn btn-red" id="clearBtn">✕ Clear</button>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab active" data-tab="presets">Presets</button>
+        <button class="tab" data-tab="text">Text</button>
+        <button class="tab" data-tab="birthday">Birthday</button>
+        <button class="tab" data-tab="adjust">Adjustment</button>
+      </div>
+      <div class="tab-panels">
+
+        <!-- PRESETS TAB -->
+        <div class="tab-panel active" id="tab-presets">
+          <div>
+            <div class="sec">One-click Presets</div>
+            <div class="preset-grid">
+              <button class="preset-btn" data-preset="vivid">⚡ Vivid</button>
+              <button class="preset-btn" data-preset="fade">🌫 Fade</button>
+              <button class="preset-btn" data-preset="noir">◼ Noir</button>
+              <button class="preset-btn" data-preset="warm">🔥 Warm</button>
+              <button class="preset-btn" data-preset="cool">❄ Cool</button>
+              <button class="preset-btn" data-preset="vintage">📷 Vintage</button>
+              <button class="preset-btn" data-preset="dramatic">🎭 Dramatic</button>
+              <button class="preset-btn" data-preset="dreamy">✨ Dreamy</button>
+            </div>
+          </div>
+          <hr class="div" />
+          <div>
+            <div class="sec">Vignette</div>
+            <div class="t-slider-label"
+              style="font-size:11px;color:var(--muted2);display:flex;justify-content:space-between;margin-bottom:6px">
+              <span>Strength</span><span id="v-vignette" style="color:var(--accent)">0%</span>
+            </div>
+            <input type="range" id="vignetteSlider" min="0" max="100" value="0" />
+          </div>
+          <div>
+            <div class="sec">Noise / Grain</div>
+            <div class="t-slider-label"
+              style="font-size:11px;color:var(--muted2);display:flex;justify-content:space-between;margin-bottom:6px">
+              <span>Amount</span><span id="v-noise" style="color:var(--accent)">0%</span>
+            </div>
+            <input type="range" id="noiseSlider" min="0" max="100" value="0" />
+          </div>
+          <div>
+            <div class="sec">Border / Frame</div>
+            <div class="preset-grid">
+              <button class="preset-btn" data-frame="none">✕ None</button>
+              <button class="preset-btn" data-frame="white">◻ White</button>
+              <button class="preset-btn" data-frame="black">◼ Black</button>
+              <button class="preset-btn" data-frame="gold">◈ Gold</button>
+              <button class="preset-btn" data-frame="neon">▣ Neon</button>
+              <button class="preset-btn" data-frame="vintage">▦ Vintage</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TEXT TAB -->
+        <div class="tab-panel" id="tab-text">
+          <div>
+            <div class="p-label">Text Content</div>
+            <textarea class="p-input" id="textContent" rows="3" placeholder="Type here…"></textarea>
+          </div>
+          <div class="row2">
+            <div>
+              <div class="p-label">Font</div>
+              <select class="p-input" id="fontFamily">
+                <option value="'Syne',sans-serif">Syne</option>
+                <option value="'DM Mono',monospace" selected>DM Mono</option>
+                <option value="Georgia,serif">Georgia</option>
+                <option value="Impact,sans-serif">Impact</option>
+                <option value="'Courier New',monospace">Courier</option>
+                <option value="'Comic Sans MS',cursive">Comic</option>
+                <option value="Verdana,sans-serif">Verdana</option>
+              </select>
+            </div>
+            <div>
+              <div class="p-label">Weight</div>
+              <select class="p-input" id="fontWeight">
+                <option value="300">Light</option>
+                <option value="400" selected>Regular</option>
+                <option value="600">SemiBold</option>
+                <option value="700">Bold</option>
+                <option value="800">Black</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <div class="p-label">Size — <span id="fontSizeVal" style="color:var(--accent)">36px</span></div>
+            <input type="range" id="fontSize" min="8" max="120" value="36" />
+          </div>
+          <div class="row2">
+            <div>
+              <div class="p-label">Style</div>
+              <select class="p-input" id="fontStyle">
+                <option>normal</option>
+                <option>italic</option>
+                <option>oblique</option>
+              </select>
+            </div>
+            <div>
+              <div class="p-label">Align</div>
+              <select class="p-input" id="textAlign">
+                <option value="center">Center</option>
+                <option value="left">Left</option>
+                <option value="right">Right</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <div class="p-label">Colors</div>
+            <div class="color-row">
+              <span>Fill</span><input type="color" id="textColor" value="#ffffff" />
+              <span>Stroke</span><input type="color" id="strokeColor" value="#000000" />
+            </div>
+            <div class="color-row">
+              <span>BG</span><input type="color" id="textBg" value="#000000" />
+              <span style="font-size:10px;color:var(--muted)">BG opacity</span>
+              <input type="range" id="textBgOpacity" min="0" max="100" value="0" style="flex:1" />
+            </div>
+          </div>
+          <div>
+            <div class="p-label">Stroke Width — <span id="strokeWidthVal" style="color:var(--accent)">0</span></div>
+            <input type="range" id="strokeWidth" min="0" max="10" value="0" />
+          </div>
+          <div>
+            <div class="p-label">Rotation — <span id="textRotVal" style="color:var(--accent)">0°</span></div>
+            <input type="range" id="textRotation" min="-180" max="180" value="0" />
+          </div>
+          <div>
+            <div class="p-label">Opacity — <span id="textOpacityVal" style="color:var(--accent)">100%</span></div>
+            <input type="range" id="textOpacity" min="0" max="100" value="100" />
+          </div>
+          <div>
+            <div class="p-label">Layer</div>
+            <div class="row2">
+              <button class="preset-btn active" id="layerBehind" data-layer="behind">🔽 Behind</button>
+              <button class="preset-btn" id="layerFront" data-layer="front">🔼 Front</button>
+            </div>
+          </div>
+          <div>
+            <div class="p-label">Position</div>
+            <div class="pos-grid">
+              <button class="pos-btn" data-pos="top-left">↖</button>
+              <button class="pos-btn" data-pos="top-center">↑</button>
+              <button class="pos-btn" data-pos="top-right">↗</button>
+              <button class="pos-btn" data-pos="middle-left">←</button>
+              <button class="pos-btn active" data-pos="middle-center">✛</button>
+              <button class="pos-btn" data-pos="middle-right">→</button>
+              <button class="pos-btn" data-pos="bottom-left">↙</button>
+              <button class="pos-btn" data-pos="bottom-center">↓</button>
+              <button class="pos-btn" data-pos="bottom-right">↘</button>
+            </div>
+          </div>
+          <button class="btn btn-accent" id="addTextBtn" style="width:100%">+ Add Text</button>
+          <button class="btn btn-ghost" id="removeLastText" style="width:100%;font-size:11px">✕ Remove Last</button>
+        </div>
+
+        <!-- BIRTHDAY TAB -->
+        <div class="tab-panel" id="tab-birthday">
+          <div class="audio-tools">
+            <select id="musicSelect">
+              <option value="">No Music</option>
+              <option value="ikoliks-hot-rock-party-event-party-celebration-music-475569.mp3">Celebration</option>
+              <option value="ikoliks_aj-event-party-celebration-music-381500.mp3">Party</option>
+              <option value="wavemaster-happy-birthday-155461.mp3">BirthDay</option>
+            </select>
+          </div>
+          <div>
+            <div class="sec">Name</div>
+            <input type="text" class="p-input" id="bdayName" placeholder="e.g. Sarah" />
+          </div>
+          <div>
+            <div class="sec">Theme</div>
+            <div class="bday-grid">
+              <div class="bday-card royal" data-theme="royal" data-emoji="👑">Royal</div>
+              <div class="bday-card fire" data-theme="fire" data-emoji="🔥">Fire</div>
+              <div class="bday-card ocean" data-theme="ocean" data-emoji="🌊">Ocean</div>
+              <div class="bday-card forest" data-theme="forest" data-emoji="🌿">Forest</div>
+              <div class="bday-card gold" data-theme="gold" data-emoji="✨">Gold</div>
+              <div class="bday-card neon" data-theme="neon" data-emoji="💜">Neon</div>
+            </div>
+          </div>
+          <div>
+            <div class="sec">Animations</div>
+            <div class="anim-grid">
+              <label class="anim-toggle"><input type="checkbox" id="animBalloons" checked> 🎈 Balloons</label>
+              <label class="anim-toggle"><input type="checkbox" id="animConfetti" checked> 🎊 Confetti</label>
+              <label class="anim-toggle"><input type="checkbox" id="animSparkles" checked> ✨ Sparkles</label>
+              <label class="anim-toggle"><input type="checkbox" id="animFireworks"> 🎆 Fireworks</label>
+            </div>
+          </div>
+          <div class="row2">
+            <button class="btn btn-accent" id="applyBdayBtn" style="width:100%;font-size:11px">🎂 Apply</button>
+            <button class="btn btn-ghost" id="stopAnimBtn" style="width:100%;font-size:11px">⏹ Stop</button>
+          </div>
+        </div>
+
+        <!-- ADJUSTMENT TAB -->
+        <div class="tab-panel" id="tab-adjust">
+          <div class="sec">Adjustments</div>
+
+          <button class="t-btn active" data-filter="brightness">
+            <span class="ico">☀</span> Brightness
+          </button>
+          <div class="t-slider-wrap" id="sw-brightness">
+            <div class="t-slider-label"><span>Value</span><span id="v-brightness">100%</span></div>
+            <input type="range" min="0" max="200" value="100" data-for="brightness" />
+          </div>
+
+          <button class="t-btn" data-filter="contrast">
+            <span class="ico">◑</span> Contrast
+          </button>
+          <div class="t-slider-wrap" id="sw-contrast" style="display:none">
+            <div class="t-slider-label"><span>Value</span><span id="v-contrast">100%</span></div>
+            <input type="range" min="0" max="200" value="100" data-for="contrast" />
+          </div>
+
+          <button class="t-btn" data-filter="saturation">
+            <span class="ico">🎨</span> Saturation
+          </button>
+          <div class="t-slider-wrap" id="sw-saturation" style="display:none">
+            <div class="t-slider-label"><span>Value</span><span id="v-saturation">100%</span></div>
+            <input type="range" min="0" max="200" value="100" data-for="saturation" />
+          </div>
+
+          <button class="t-btn" data-filter="blur">
+            <span class="ico">💧</span> Blur
+          </button>
+          <div class="t-slider-wrap" id="sw-blur" style="display:none">
+            <div class="t-slider-label"><span>Value</span><span id="v-blur">0px</span></div>
+            <input type="range" min="0" max="20" value="0" data-for="blur" />
+          </div>
+
+          <button class="t-btn" data-filter="grayscale">
+            <span class="ico">⬜</span> Grayscale
+          </button>
+          <div class="t-slider-wrap" id="sw-grayscale" style="display:none">
+            <div class="t-slider-label"><span>Value</span><span id="v-grayscale">0%</span></div>
+            <input type="range" min="0" max="100" value="0" data-for="grayscale" />
+          </div>
+
+          <button class="t-btn" data-filter="sepia">
+            <span class="ico">🟤</span> Sepia
+          </button>
+          <div class="t-slider-wrap" id="sw-sepia" style="display:none">
+            <div class="t-slider-label"><span>Value</span><span id="v-sepia">0%</span></div>
+            <input type="range" min="0" max="100" value="0" data-for="sepia" />
+          </div>
+
+          <button class="t-btn" data-filter="hueRotate">
+            <span class="ico">🌈</span> Hue Shift
+          </button>
+          <div class="t-slider-wrap" id="sw-hueRotate" style="display:none">
+            <div class="t-slider-label"><span>Value</span><span id="v-hueRotate">0°</span></div>
+            <input type="range" min="0" max="360" value="0" data-for="hueRotate" />
+          </div>
+
+          <button class="t-btn" data-filter="inversion">
+            <span class="ico">🔄</span> Invert
+          </button>
+          <div class="t-slider-wrap" id="sw-inversion" style="display:none">
+            <div class="t-slider-label"><span>Value</span><span id="v-inversion">0%</span></div>
+            <input type="range" min="0" max="100" value="0" data-for="inversion" />
+          </div>
+
+          <div class="t-divider"></div>
+          <div class="sec">Opacity</div>
+          <div class="t-slider-wrap">
+            <div class="t-slider-label"><span>Image Alpha</span><span id="v-opacity">100%</span></div>
+            <input type="range" id="opacitySlider" min="0" max="100" value="100" />
+          </div>
+
+          <div class="t-divider"></div>
+          <div class="sec">Transform</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 4px">
+            <button class="t-btn" data-action="left" style="justify-content:center">↺ L</button>
+            <button class="t-btn" data-action="right" style="justify-content:center">↻ R</button>
+            <button class="t-btn" data-action="flipH" style="justify-content:center">⇔ H</button>
+            <button class="t-btn" data-action="flipV" style="justify-content:center">⇕ V</button>
+          </div>
+        </div>
+
+      </div><!-- /tab-panels -->
+    </div><!-- /panel -->
+
+  </div><!-- /app -->
+
+  <div class="toast" id="toast">Done!</div>
+
+  <script src="./Script.js"></script>
+</body>
+
+</html>
